@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RootView: View {
-    let container = AppContainer.shared
+    @Bindable var container: AppContainer
     
     @State private var isChecking: Bool = true
     @State private var hasProfile: Bool = false
@@ -18,7 +18,7 @@ struct RootView: View {
             if isChecking {
                 ProgressView("Descriptografando acesso...")
             } else if hasProfile {
-                MainTabView()
+                MainTabView(container: container)
             } else {
                 OnboardingView(viewModel: OnboardingViewModel(userService: container.userService)) {
                     withAnimation {
@@ -41,6 +41,3 @@ struct RootView: View {
     }
 }
 
-#Preview {
-    RootView()
-}

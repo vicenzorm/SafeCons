@@ -42,7 +42,7 @@ struct ChatView: View {
                             .foregroundStyle(Color(.systemGray6))
                     )
                 Button {
-                    print(viewModel.newMessage)
+                    viewModel.saveMessage(user: chat.participants.first(where: { $0.isMe })!, chat: chat)
                 } label: {
                     Image(systemName: "paperplane")
                 }

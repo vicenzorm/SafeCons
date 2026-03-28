@@ -12,6 +12,7 @@ protocol CryptoServiceProtocol {
     func generateKeyPair() throws -> (Data, Data)
     func encryptMessage(text: String, recipientPublicKey: Data) throws -> Data
     func decryptMessage(encryptedData: Data, senderPublicKey: Data) throws -> String
+    func hashPublicKey(_ key: Data) -> String
 }
 
 @MainActor
@@ -72,5 +73,10 @@ final class CryptoService: CryptoServiceProtocol {
     private func loadKeyFromKeychain() throws {
         guard let ticket = KeychainManager.load() else { return }
         self.myPrivateKey = try SecureEnclave.P256.KeyAgreement.PrivateKey(dataRepresentation: ticket)
+    }
+    
+    func hashPublicKey(_ key: Data) -> String {
+        let hash = SHA256.hash(data: key)
+        return hash.compactMap { String(format: "%02x", $0) }.joined().prefix(16).description
     }
 }

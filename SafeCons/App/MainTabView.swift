@@ -10,7 +10,7 @@ import SwiftUI
 
 struct MainTabView: View {
     
-    let container = AppContainer.shared
+    @Bindable var container: AppContainer
     
     var body: some View {
         TabView {
@@ -26,10 +26,22 @@ struct MainTabView: View {
                 }
             }
         }
-        .tint(.accentColor) 
+        .tint(.accentColor)
+        .alert("Tentativa de Conexão", isPresented: $container.requestManager.isShowingRequest) {
+            
+            Button("Recusar", role: .cancel) {
+                container.requestManager.clear()
+            }
+            
+            Button("Aceitar") {
+                Task {
+                    await container.acceptPendingConnection()
+                }
+            }
+            
+        } message: {
+            Text("Um dispositivo com criptografia válida está tentando estabelecer uma conexão segura e te enviou uma mensagem. Deseja aceitar?")
+        }
     }
 }
 
-#Preview {
-    MainTabView()
-}

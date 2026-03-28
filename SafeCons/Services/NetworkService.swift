@@ -14,7 +14,7 @@ import UIKit
 protocol NetworkServiceProtocol {
     func startScanning()
     func startListening(onMessageReceived: @escaping (Data) -> Void)
-    func send(payload: Data, targetID: UUID)
+    func send(payload: Data)
     func receive(payload: Data)
 }
 
@@ -54,18 +54,26 @@ final class NetworkService: NSObject, NetworkServiceProtocol {
     }
 
     func startScanning() {
-        // TODO: Implement scanning flow.
+        if centralManager.state == .poweredOn {
+            print("iniciando busca")
+            centralManager.scanForPeripherals(withServices: [NetworkService.serviceUUID], options: nil)
+        }
     }
 
     func startListening(onMessageReceived: @escaping (Data) -> Void) {
         self.messageCallback = onMessageReceived
     }
     
-    func send(payload: Data, targetID: UUID) {
-        let chunks = splitIntoChunks(fullData: payload, chunkSize: 100)
-        
-        for chunk in chunks {
-            sendChunk(chunk: chunk, targetID: targetID)
+    func send(payload: Data) {
+        for targetID in connectedPeers.keys {
+            guard let peripheral = connectedPeers[targetID] else { continue }
+            
+            let safeChunkSize = max(20, peripheral.maximumWriteValueLength(for: .withoutResponse) - 40)
+            
+            let chunks = splitIntoChunks(fullData: payload, chunkSize: safeChunkSize)
+            for chunk in chunks {
+                sendChunk(chunk: chunk, targetID: targetID)
+            }
         }
     }
     
@@ -95,7 +103,6 @@ final class NetworkService: NSObject, NetworkServiceProtocol {
     
     private func sendChunk(chunk: MessageChunk, targetID: UUID) {
         guard let peripheral = connectedPeers[targetID], let characteristic = peerCharacteristics[targetID] else { return }
-        
         do {
             let chunkData = try JSONEncoder().encode(chunk)
             peripheral.writeValue(chunkData, for: characteristic, type: .withoutResponse)
@@ -109,6 +116,14 @@ final class NetworkService: NSObject, NetworkServiceProtocol {
             let chunk = try JSONDecoder().decode(MessageChunk.self, from: payload)
             if incomingChunks[chunk.messageID] == nil {
                 incomingChunks[chunk.messageID] = []
+                
+                // otimização pra salvar memória
+                Task {
+                    try? await Task.sleep(nanoseconds: 15_000_000_000)
+                    if let savedChunks = incomingChunks[chunk.messageID], savedChunks.count < chunk.totalChunks {
+                        incomingChunks.removeValue(forKey: chunk.messageID)
+                    }
+                }
             }
             incomingChunks[chunk.messageID]?.append(chunk)
             let savedChunks = incomingChunks[chunk.messageID]!
@@ -153,7 +168,7 @@ extension NetworkService: CBCentralManagerDelegate, CBPeripheralManagerDelegate,
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            central.scanForPeripherals(withServices: [NetworkService.serviceUUID], options: nil)
+            print("bluetooth ligado")
         case .unknown:
             print("erro enorme")
         case .resetting:
@@ -181,7 +196,6 @@ extension NetworkService: CBCentralManagerDelegate, CBPeripheralManagerDelegate,
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        print("encontrado \(peripheral.name ?? "Desconhecido")")
         let myID = UserDefaults.standard.string(forKey: "SafeConsDeviceID") ?? {
             let newID = UUID().uuidString
             UserDefaults.standard.set(newID, forKey: "SafeConsDeviceID")

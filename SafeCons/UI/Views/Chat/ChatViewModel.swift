@@ -29,21 +29,22 @@ final class ChatViewModel: ChatViewModelProtocol {
         self.cryptoService = cryptoService
         self.networkService = networkService
         self.currentChat = chat
-        
-        self.networkService.startListening { [weak self] payloadData in
-            Task { @MainActor in
-                self?.handleIncoming(payload: payloadData)
-            }
-        }
     }
     
     func saveMessage(user: User, chat: Chat) {
-        let otherUser = chat.participants.first(where: { !$0.isMe})
+        let otherUser = chat.participants.first(where: { !$0.isMe })
         if let otherUser {
             do {
-                let encryptedData = try cryptoService.encryptMessage(text: newMessage, recipientPublicKey: otherUser.publicKey)
+                let timestamp = Int(Date().timeIntervalSince1970)
+                let payloadToEncrypt = "\(timestamp)|\(newMessage)"
+                let encryptedData = try cryptoService.encryptMessage(text: payloadToEncrypt, recipientPublicKey: otherUser.publicKey)
                 let message = Message(sender: user, content: encryptedData, isEncrypted: true)
                 chat.messages.append(message)
+                
+                let envelope = TransportEnvelope(senderPublicKey: user.publicKey, encryptedPayload: encryptedData)
+                if let envelopeData = try? JSONEncoder().encode(envelope) {
+                    networkService.send(payload:envelopeData)
+                }
             } catch {
                 print(error)
             }
@@ -54,12 +55,12 @@ final class ChatViewModel: ChatViewModelProtocol {
     
     func decryptMessage(message: Message, chat: Chat) -> String {
         guard message.isEncrypted else {
-            return String(data: message.content, encoding: .utf8) ?? "[Erro de codificação]"
+            return String(data: message.content, encoding: .utf8) ?? "Erro de codificação"
         }
         if let otherPublicKey = chat.participants.first(where: { !$0.isMe })?.publicKey {
             do {
                 let decryptedMessage = try cryptoService.decryptMessage(encryptedData: message.content, senderPublicKey: otherPublicKey)
-                return decryptedMessage
+                return extractMessageFromPayload(decryptedMessage)
             } catch {
                 print(error)
             }
@@ -67,18 +68,11 @@ final class ChatViewModel: ChatViewModelProtocol {
         return "error at decrypting"
     }
     
-    private func handleIncoming(payload: Data) {
-        do {
-            guard let otherUser = currentChat.participants.first(where: { !$0.isMe }) else {
-                return
-            }
-            let decryptedMessage = try cryptoService.decryptMessage(encryptedData: payload, senderPublicKey: otherUser.publicKey)
-            let newMessage = Message(sender: otherUser, content: payload, isEncrypted: true)
-            currentChat.messages.append(newMessage)
-            currentChat.updatedAt = .now
-        
-        } catch {
-            
+    private func extractMessageFromPayload(_ payload: String) -> String {
+        let parts = payload.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
+        guard parts.count == 2, Int(parts[0]) != nil else {
+            return payload
         }
+        return String(parts[1])
     }
 }

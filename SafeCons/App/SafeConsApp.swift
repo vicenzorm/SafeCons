@@ -15,7 +15,7 @@ struct SafeConsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(container: container)
         }
         .modelContainer(container.modelContainer)
     }
