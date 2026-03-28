@@ -6,6 +6,7 @@
 //
 import Foundation
 import CryptoKit
+import SwiftUI
 
 @MainActor
 protocol CryptoServiceProtocol {
@@ -13,6 +14,7 @@ protocol CryptoServiceProtocol {
     func encryptMessage(text: String, recipientPublicKey: Data) throws -> Data
     func decryptMessage(encryptedData: Data, senderPublicKey: Data) throws -> String
     func hashPublicKey(_ key: Data) -> String
+    func generateIdentityColors(from name: String) -> [Color]
 }
 
 @MainActor
@@ -79,4 +81,26 @@ final class CryptoService: CryptoServiceProtocol {
         let hash = SHA256.hash(data: key)
         return hash.compactMap { String(format: "%02x", $0) }.joined().prefix(16).description
     }
+    
+    func generateIdentityColors(from name: String) -> [Color] {
+        guard !name.isEmpty, let data = name.data(using: .utf8) else {
+            return [Color.gray.opacity(0.5), Color.black]
+        }
+        let hash = SHA256.hash(data: data)
+        let bytes = Array(hash)
+        let color1 = Color(
+            red: Double(bytes[0]) / 255.0,
+            green: Double(bytes[1]) / 255.0,
+            blue: Double(bytes[2]) / 255.0
+        )
+        
+        let color2 = Color(
+            red: Double(bytes[3]) / 255.0,
+            green: Double(bytes[4]) / 255.0,
+            blue: Double(bytes[5]) / 255.0
+        )
+        
+        return [color1, color2]
+    }
+    
 }

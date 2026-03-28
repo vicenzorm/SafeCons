@@ -7,6 +7,7 @@
 import Foundation
 import SwiftUI
 import CoreImage.CIFilterBuiltins
+import CryptoKit
 
 @MainActor
 protocol UserViewModelProtocol {
@@ -15,6 +16,7 @@ protocol UserViewModelProtocol {
     var errorMessage: String? { get }
     
     func loadMyProfile()
+    func generateColorsForProfile(from name: String) -> [Color]
 }
 
 @Observable
@@ -25,9 +27,11 @@ final class UserViewModel: UserViewModelProtocol {
     var errorMessage: String?
     
     private let userService: UserServiceProtocol
+    private let cryptoService: CryptoServiceProtocol
     
-    init(userService: UserServiceProtocol) {
+    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol) {
         self.userService = userService
+        self.cryptoService = cryptoService
     }
     
     func loadMyProfile() {
@@ -64,4 +68,7 @@ final class UserViewModel: UserViewModelProtocol {
         return nil
     }
     
+    func generateColorsForProfile(from name: String) -> [Color] {
+        cryptoService.generateIdentityColors(from: name)
+    }
 }

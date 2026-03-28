@@ -5,6 +5,7 @@
 //  Created by Vicenzo Másera on 27/03/26.
 //
 import Foundation
+import SwiftUI
 
 @MainActor
 protocol ContactsViewModelProtocol {
@@ -23,9 +24,11 @@ final class ContactsViewModel: ContactsViewModelProtocol {
     var isShowingCamera: Bool = false
     
     private let userService: UserServiceProtocol
+    private let cryptoService: CryptoServiceProtocol
     
-    init(userService: UserServiceProtocol) {
+    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol) {
         self.userService = userService
+        self.cryptoService = cryptoService
     }
     
     func addContact(scannedCode: String) async throws {
@@ -41,6 +44,9 @@ final class ContactsViewModel: ContactsViewModelProtocol {
         
     }
     
+    func generateCardColors(name: String) -> [Color] {
+        cryptoService.generateIdentityColors(from: name)
+    }
     
     
 }

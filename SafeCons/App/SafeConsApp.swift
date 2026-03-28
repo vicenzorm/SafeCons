@@ -17,6 +17,7 @@ struct SafeConsApp: App {
         WindowGroup {
             RootView(container: container)
                 .fontDesign(.monospaced)
+                .modifier(PrivacySnapshotModifier())
         }
         .modelContainer(container.modelContainer)
     }

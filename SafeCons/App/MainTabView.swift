@@ -16,7 +16,7 @@ struct MainTabView: View {
         TabView {
             Tab("Contacts", systemImage: "bubble.left.and.bubble.right.fill") {
                 NavigationStack {
-                    ContactsView(viewModel: ContactsViewModel(userService: container.userService))
+                    ContactsView(viewModel: ContactsViewModel(userService: container.userService, cryptoService: container.cryptoService))
                 }
             }
             
@@ -29,7 +29,7 @@ struct MainTabView: View {
             
             Tab("Connect", systemImage: "qrcode.viewfinder") {
                 NavigationStack {
-                    UserView(viewModel: UserViewModel(userService: container.userService))
+                    UserView(viewModel: UserViewModel(userService: container.userService, cryptoService: container.cryptoService))
                 }
             }
         }

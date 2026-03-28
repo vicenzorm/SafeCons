@@ -4,6 +4,7 @@
 //
 //  Created by Vicenzo Másera on 27/03/26.
 //
+
 import SwiftUI
 
 struct UserView: View {
@@ -11,28 +12,92 @@ struct UserView: View {
     var viewModel: UserViewModel
     
     var body: some View {
-        VStack {
+        VStack(spacing: 24) {
+            
+            VStack(spacing: 8) {
+                Image(systemName: "antenna.radiowaves.left.and.right")
+                    .font(.system(size: 32))
+                    .foregroundStyle(.green)
+                
+                Text("Beacon de Transmissão")
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                
+                Text("Apresente este terminal para iniciar o handshake físico (Out-of-Band).")
+                    .font(.caption)
+                    .foregroundStyle(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+            .padding(.top, 24)
             
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
-            }
-            
-            Text(viewModel.userName)
-            
-            if let qrCode = viewModel.qrCode {
-                
-                Image(uiImage: qrCode)
-                    .resizable()
-                    .interpolation(.none)
+                    .font(.footnote)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(Color.red.opacity(0.15))
+                    .foregroundStyle(.red)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .frame(width: 250, height: 250)
-                
-            } else {
-                ProgressView("Loading QRCODE...")
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.red.opacity(0.5), lineWidth: 1)
+                    )
             }
+            
+            Spacer()
+            
+            ZStack {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(LinearGradient(
+                        colors: viewModel.generateColorsForProfile(from: viewModel.userName),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                    .opacity(0.3)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                
+                VStack(spacing: 24) {
+                    Text(viewModel.userName)
+                        .font(.title2)
+                        .bold()
+                        .foregroundStyle(.primary)
+                    
+                    if let qrCode = viewModel.qrCode {
+                        Image(uiImage: qrCode)
+                            .resizable()
+                            .interpolation(.none)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .padding(8)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .frame(width: 220, height: 220)
+                            .shadow(color: .black.opacity(0.5), radius: 10, x: 0, y: 5)
+                    } else {
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .tint(.green)
+                            Text("Forjando matriz...")
+                                .font(.caption)
+                                .foregroundStyle(.gray)
+                        }
+                        .frame(width: 220, height: 220)
+                    }
+                }
+                .padding(.vertical, 32)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 32)
+            
+            Spacer()
         }
         .task {
             viewModel.loadMyProfile()
         }
     }
+    
+    
 }

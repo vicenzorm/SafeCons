@@ -38,6 +38,7 @@ struct RootView: View {
                 print(error)
             }
         }
+        
     }
 }
 

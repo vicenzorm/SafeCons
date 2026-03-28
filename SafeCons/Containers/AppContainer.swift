@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @Observable
 @MainActor
@@ -21,6 +22,10 @@ class AppContainer {
     let cryptoService: CryptoServiceProtocol
     let networkService: NetworkServiceProtocol
     var requestManager: ConnectionRequestManager
+    
+    var activePublicKeys: [String: Date] = [:]
+    
+    private var cleanupTimer: Timer?
     
     private init() {
         self.modelContainer = try! ModelContainer(for: User.self , Message.self , Chat.self)
@@ -41,6 +46,12 @@ class AppContainer {
                 await self?.processIncomingGlobalMessage(payload: payloadData)
             }
         }
+        
+        requestNotificationPermission()
+    }
+    
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
     
     private func processIncomingGlobalMessage(payload: Data) async {
@@ -52,6 +63,9 @@ class AppContainer {
             guard let parsedData = parseTimestampedPayload(decryptedPayload) else {
                 return
             }
+            
+            let senderKeyHash = cryptoService.hashPublicKey(envelope.senderPublicKey)
+            activePublicKeys[senderKeyHash] = Date()
             
             let currentTimestamp = Int(Date().timeIntervalSince1970)
             if currentTimestamp - parsedData.timestamp > 60 {
@@ -67,12 +81,12 @@ class AppContainer {
                     chat.messages.append(newMessage)
                     chat.updatedAt = .now
                     try self.modelContext.save()
-                        // UNUserNotificationCenter de mensagem enviada para você
+                    triggerPrivateNotification()
                 }
                 
             } else {
-                    // UNUserNotificationCenter de novo contato tentando te adicionar
                 self.requestManager.receiveRequest(publicKey: envelope.senderPublicKey, payload: envelope.encryptedPayload, senderName: parsedData.senderName)
+                triggerPrivateNotification()
             }
         } catch {
             print(error.localizedDescription)
@@ -104,5 +118,38 @@ class AppContainer {
             return nil
         }
         return (timestamp: timestamp, senderName:String(parts[1]), message: String(parts[2]))
+    }
+    
+    func isContactOnline(publicKey: Data) -> Bool {
+        let hash = cryptoService.hashPublicKey(publicKey)
+        
+        if let lastSeen = activePublicKeys[hash], lastSeen.timeIntervalSinceNow > -60 {
+            return true
+        }
+        return false
+    }
+    
+    private func startCleanupTimer() {
+        cleanupTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.pruneInactivePublicKeys()
+            }
+        }
+    }
+
+    private func pruneInactivePublicKeys() {
+        activePublicKeys = activePublicKeys.filter { $0.value.timeIntervalSinceNow >= -120 }
+    }
+    
+    func triggerPrivateNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "SafeCons"
+        content.body = "Você tem uma nova mensagem."
+        content.sound = .default
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request)
     }
 }
