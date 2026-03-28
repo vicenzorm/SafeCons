@@ -1,0 +1,76 @@
+//
+//  UserService.swift
+//  SafeCons
+//
+//  Created by Vicenzo Másera on 27/03/26.
+//
+
+import Foundation
+import SwiftData
+
+@MainActor
+protocol UserServiceProtocol {
+    func checkDeviceOwnership() throws -> Bool
+    func createOwnProfile(name: String) async throws -> User
+    func createContact(name: String, publicKey: Data) async throws -> User
+    func fetchOwnUserData() throws -> User
+    func fetchContact(publicKey: Data) throws-> User?
+}
+
+@MainActor
+final class UserService: UserServiceProtocol {
+    
+    private let modelContext: ModelContext
+    private let cryptoService: CryptoServiceProtocol
+    
+    init(modelContext: ModelContext, cryptoService: CryptoServiceProtocol) {
+        self.modelContext = modelContext
+        self.cryptoService = cryptoService
+    }
+    
+    func checkDeviceOwnership() throws -> Bool {
+        let predicate = #Predicate<User> { $0.isMe == true }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        
+        do {
+            let count = try modelContext.fetchCount(descriptor)
+            return count > 0
+        } catch {
+            throw error
+        }
+    }
+    
+    func createOwnProfile(name: String) async throws -> User {
+        let publicKey = cryptoService.generateKeyPair()
+        let newUser = User(name: name.trimmingCharacters(in: .whitespacesAndNewlines), publicKey: publicKey, isMe: true)
+        modelContext.insert(newUser)
+        try modelContext.save()
+        return newUser
+    }
+    
+    func createContact(name: String, publicKey: Data) async throws -> User {
+        let newContact = User(name: name, publicKey: publicKey, isMe: false)
+        modelContext.insert(newContact)
+        try modelContext.save()
+        return newContact
+    }
+    
+    func fetchOwnUserData() throws -> User {
+        let predicate = #Predicate<User> { $0.isMe == true }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        
+        do {
+            let user = try modelContext.fetch(descriptor).first
+            guard let user else { fatalError("No user found") }
+            return user
+        } catch {
+            throw error
+        }
+    }
+    
+    func fetchContact(publicKey: Data) throws -> User? {
+        let predicate = #Predicate<User> { $0.publicKey == publicKey }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return try modelContext.fetch(descriptor).first
+    }
+}
