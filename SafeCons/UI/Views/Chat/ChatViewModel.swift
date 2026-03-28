@@ -20,10 +20,21 @@ final class ChatViewModel: ChatViewModelProtocol {
     
     var newMessage: String = ""
     
+    private let networkService: NetworkServiceProtocol
     private let cryptoService: CryptoServiceProtocol
     
-    init(cryptoService: CryptoServiceProtocol) {
+    private let currentChat: Chat
+    
+    init(cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol, chat: Chat) {
         self.cryptoService = cryptoService
+        self.networkService = networkService
+        self.currentChat = chat
+        
+        self.networkService.startListening { [weak self] payloadData in
+            Task { @MainActor in
+                self?.handleIncoming(payload: payloadData)
+            }
+        }
     }
     
     func saveMessage(user: User, chat: Chat) {
@@ -37,9 +48,7 @@ final class ChatViewModel: ChatViewModelProtocol {
                 print(error)
             }
         }
-        
         chat.updatedAt = .now
-        
         newMessage = ""
     }
     
@@ -56,5 +65,20 @@ final class ChatViewModel: ChatViewModelProtocol {
             }
         }
         return "error at decrypting"
+    }
+    
+    private func handleIncoming(payload: Data) {
+        do {
+            guard let otherUser = currentChat.participants.first(where: { !$0.isMe }) else {
+                return
+            }
+            let decryptedMessage = try cryptoService.decryptMessage(encryptedData: payload, senderPublicKey: otherUser.publicKey)
+            let newMessage = Message(sender: otherUser, content: payload, isEncrypted: true)
+            currentChat.messages.append(newMessage)
+            currentChat.updatedAt = .now
+        
+        } catch {
+            
+        }
     }
 }

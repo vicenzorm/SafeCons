@@ -10,9 +10,22 @@
 		C55963292F7625B5001E7E68 /* SafeCons.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SafeCons.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C55966972F783901001E7E68 /* Exceptions for "SafeCons" folder in "SafeCons" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C55963282F7625B5001E7E68 /* SafeCons */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C559632B2F7625B5001E7E68 /* SafeCons */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C55966972F783901001E7E68 /* Exceptions for "SafeCons" folder in "SafeCons" target */,
+			);
 			path = SafeCons;
 			sourceTree = "<group>";
 		};
@@ -256,6 +269,8 @@
 				DEVELOPMENT_TEAM = K7J6QAV9ZN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SafeCons/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Necessário para encontrar conexões seguras próximas.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Necessário para escanear a chave pública de suas conexões.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -289,6 +304,8 @@
 				DEVELOPMENT_TEAM = K7J6QAV9ZN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SafeCons/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Necessário para encontrar conexões seguras próximas.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Necessário para escanear a chave pública de suas conexões.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

@@ -32,7 +32,7 @@ struct ContactsView: View {
                         ForEach(contacts) { contact in
                             if let chatRoom = contact.chats.first {
                                 NavigationLink(contact.name){
-                                    ChatView(viewModel: ChatViewModel(cryptoService: CryptoService.shared), chat: chatRoom)
+                                    ChatView(viewModel: ChatViewModel(cryptoService: CryptoService.shared, networkService: AppContainer.shared.networkService), chat: chatRoom)
                                 }
                             }
                         }
