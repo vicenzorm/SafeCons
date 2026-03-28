@@ -13,6 +13,7 @@ final class Chat: Identifiable {
     var id: UUID
     
     var participants: [User]
+    var updatedAt: Date
     
     @Relationship(deleteRule: .cascade, inverse: \Message.chat)
     var messages: [Message]
@@ -21,5 +22,6 @@ final class Chat: Identifiable {
         self.id = UUID()
         self.participants = []
         self.messages = []
+        self.updatedAt = Date.now
     }
 }

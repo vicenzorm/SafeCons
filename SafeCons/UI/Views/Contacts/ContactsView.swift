@@ -30,10 +30,11 @@ struct ContactsView: View {
                 } else {
                     List {
                         ForEach(contacts) { contact in
-                            Text(contact.name)
-                                .onTapGesture {
-                                    print("indo para o \(contact.name)")
+                            if let chatRoom = contact.chats.first {
+                                NavigationLink(contact.name){
+                                    ChatView(chat: chatRoom)
                                 }
+                            }
                         }
                     }
                     .listStyle(.plain)

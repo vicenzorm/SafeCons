@@ -50,10 +50,17 @@ final class UserService: UserServiceProtocol {
     
     func createContact(name: String, publicKey: Data) async throws -> User {
         let newContact = User(name: name, publicKey: publicKey, isMe: false)
+        let ownUser = try self.fetchOwnUserData()
+        let newChat = Chat()
+        newChat.participants.append(contentsOf:[ownUser, newContact])
+        
         modelContext.insert(newContact)
+        modelContext.insert(newChat)
+        
         try modelContext.save()
         return newContact
     }
+    
     
     func fetchOwnUserData() throws -> User {
         let predicate = #Predicate<User> { $0.isMe == true }
