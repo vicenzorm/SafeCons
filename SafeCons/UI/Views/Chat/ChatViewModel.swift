@@ -36,7 +36,7 @@ final class ChatViewModel: ChatViewModelProtocol {
         if let otherUser {
             do {
                 let timestamp = Int(Date().timeIntervalSince1970)
-                let payloadToEncrypt = "\(timestamp)|\(newMessage)"
+                let payloadToEncrypt = "\(timestamp)|\(user.name)|\(newMessage)"
                 let encryptedData = try cryptoService.encryptMessage(text: payloadToEncrypt, recipientPublicKey: otherUser.publicKey)
                 let message = Message(sender: user, content: encryptedData, isEncrypted: true)
                 chat.messages.append(message)
@@ -69,9 +69,9 @@ final class ChatViewModel: ChatViewModelProtocol {
     }
     
     private func extractMessageFromPayload(_ payload: String) -> String {
-        let parts = payload.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
-        guard parts.count == 2, Int(parts[0]) != nil else {
-            return payload
+        let parts = payload.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
+        if parts.count == 3 {
+            return String(parts[2])
         }
         return String(parts[1])
     }

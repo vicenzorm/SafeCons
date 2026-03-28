@@ -49,12 +49,12 @@ class AppContainer {
             
             let decryptedPayload = try self.cryptoService.decryptMessage(encryptedData: envelope.encryptedPayload, senderPublicKey: envelope.senderPublicKey)
             
-            guard let (receivedTimestamp, _) = parseTimestampedPayload(decryptedPayload) else {
+            guard let parsedData = parseTimestampedPayload(decryptedPayload) else {
                 return
             }
             
             let currentTimestamp = Int(Date().timeIntervalSince1970)
-            if currentTimestamp - receivedTimestamp > 60 {
+            if currentTimestamp - parsedData.timestamp > 60 {
                 return
             }
             
@@ -72,22 +72,18 @@ class AppContainer {
                 
             } else {
                     // UNUserNotificationCenter de novo contato tentando te adicionar
-                self.requestManager.receiveRequest(publicKey: envelope.senderPublicKey, payload: envelope.encryptedPayload)
+                self.requestManager.receiveRequest(publicKey: envelope.senderPublicKey, payload: envelope.encryptedPayload, senderName: parsedData.senderName)
             }
         } catch {
             print(error.localizedDescription)
         }
     }
     
-    func acceptPendingConnection() async {
-        guard let pubKey = requestManager.pendingRequests.first?.publicKey,
-              let payload = requestManager.pendingRequests.first?.payload else { return }
-        
+    func acceptConnection(_ request: ConnectionRequest) async {
         do {
-            let newContact = try await userService.createContact(name: "Desconhecido", publicKey: pubKey)
-            
+            let newContact = try await userService.createContact(name: request.senderName, publicKey: request.publicKey)
             if let newChat = newContact.chats.first {
-                let newMessage = Message(sender: newContact, content: payload, isEncrypted: true)
+                let newMessage = Message(sender: newContact, content: request.payload, isEncrypted: true)
                 newChat.messages.append(newMessage)
                 newChat.updatedAt = .now
                 try modelContext.save()
@@ -95,14 +91,18 @@ class AppContainer {
         } catch {
             print(error.localizedDescription)
         }
-        requestManager.clear()
+        requestManager.removeRequest(request)
     }
     
-    private func parseTimestampedPayload(_ payload: String) -> (timestamp: Int, message: String)? {
-        let parts = payload.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
-        guard parts.count == 2, let timestamp = Int(parts[0]) else {
+    func rejectConnection(_ request: ConnectionRequest) {
+        requestManager.removeRequest(request)
+    }
+    
+    private func parseTimestampedPayload(_ payload: String) -> (timestamp: Int, senderName: String, message: String)? {
+        let parts = payload.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
+        guard parts.count == 3, let timestamp = Int(parts[0]) else {
             return nil
         }
-        return (timestamp: timestamp, message: String(parts[1]))
+        return (timestamp: timestamp, senderName:String(parts[1]), message: String(parts[2]))
     }
 }

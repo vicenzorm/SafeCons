@@ -20,6 +20,13 @@ struct MainTabView: View {
                 }
             }
             
+            Tab("Intercom", systemImage: "sensor.tag.radiowaves.forward") {
+                NavigationStack {
+                    IntercomView()
+                }
+            }
+            .badge(container.requestManager.pendingRequests.count)
+            
             Tab("Connect", systemImage: "qrcode.viewfinder") {
                 NavigationStack {
                     UserView(viewModel: UserViewModel(userService: container.userService))
@@ -27,21 +34,6 @@ struct MainTabView: View {
             }
         }
         .tint(.accentColor)
-        .alert("Tentativa de Conexão", isPresented: $container.requestManager.isShowingRequest) {
-            
-            Button("Recusar", role: .cancel) {
-                container.requestManager.clear()
-            }
-            
-            Button("Aceitar") {
-                Task {
-                    await container.acceptPendingConnection()
-                }
-            }
-            
-        } message: {
-            Text("Um dispositivo com criptografia válida está tentando estabelecer uma conexão segura e te enviou uma mensagem. Deseja aceitar?")
-        }
     }
 }
 

@@ -21,7 +21,7 @@ protocol NetworkServiceProtocol {
 @Observable
 @MainActor
 final class NetworkService: NSObject, NetworkServiceProtocol {
-   
+    
     private var centralManager: CBCentralManager!
     private var peripheralManager: CBPeripheralManager!
     
@@ -52,14 +52,14 @@ final class NetworkService: NSObject, NetworkServiceProtocol {
         self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil)
         
     }
-
+    
     func startScanning() {
         if centralManager.state == .poweredOn {
             print("iniciando busca")
             centralManager.scanForPeripherals(withServices: [NetworkService.serviceUUID], options: nil)
         }
     }
-
+    
     func startListening(onMessageReceived: @escaping (Data) -> Void) {
         self.messageCallback = onMessageReceived
     }
@@ -68,7 +68,8 @@ final class NetworkService: NSObject, NetworkServiceProtocol {
         for targetID in connectedPeers.keys {
             guard let peripheral = connectedPeers[targetID] else { continue }
             
-            let safeChunkSize = max(20, peripheral.maximumWriteValueLength(for: .withoutResponse) - 40)
+            let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse)
+            let safeChunkSize = max(20, Int(Double(mtu) * 0.3))
             
             let chunks = splitIntoChunks(fullData: payload, chunkSize: safeChunkSize)
             for chunk in chunks {
@@ -110,14 +111,14 @@ final class NetworkService: NSObject, NetworkServiceProtocol {
             print(error.localizedDescription)
         }
     }
-
+    
     func receive(payload: Data) {
         do {
             let chunk = try JSONDecoder().decode(MessageChunk.self, from: payload)
             if incomingChunks[chunk.messageID] == nil {
                 incomingChunks[chunk.messageID] = []
                 
-                // otimização pra salvar memória
+                    // otimização pra salvar memória
                 Task {
                     try? await Task.sleep(nanoseconds: 15_000_000_000)
                     if let savedChunks = incomingChunks[chunk.messageID], savedChunks.count < chunk.totalChunks {
@@ -134,7 +135,7 @@ final class NetworkService: NSObject, NetworkServiceProtocol {
                 for piece in sortedChunks {
                     fullEncryptedData.append(piece.partialContent)
                 }
-                // apenas para não pesar na ram
+                    // apenas para não pesar na ram
                 incomingChunks.removeValue(forKey: chunk.messageID)
                 messageCallback?(fullEncryptedData)
             } else {
@@ -196,19 +197,13 @@ extension NetworkService: CBCentralManagerDelegate, CBPeripheralManagerDelegate,
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        let myID = UserDefaults.standard.string(forKey: "SafeConsDeviceID") ?? {
-            let newID = UUID().uuidString
-            UserDefaults.standard.set(newID, forKey: "SafeConsDeviceID")
-            return newID
-        }()
         
-        let otherID = peripheral.identifier.uuidString
-        if myID > otherID {
-            if !discoveredPeripherals.contains(peripheral) {
-                discoveredPeripherals.append(peripheral)
-            }
-            central.connect(peripheral, options: nil)
+        if !discoveredPeripherals.contains(peripheral) {
+            discoveredPeripherals.append(peripheral)
+            print("agora conectado ao \(peripheral)")
         }
+        
+        central.connect(peripheral, options: nil)
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {

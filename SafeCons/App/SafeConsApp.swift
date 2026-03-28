@@ -16,6 +16,7 @@ struct SafeConsApp: App {
     var body: some Scene {
         WindowGroup {
             RootView(container: container)
+                .fontDesign(.monospaced)
         }
         .modelContainer(container.modelContainer)
     }
