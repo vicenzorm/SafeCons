@@ -8,22 +8,19 @@ Following the Unix philosophy—doing one thing and doing it well—SafeCons pro
 
 ## ✨ Core Features
 
-* **Local Identity Forging:** Generates a secure P256 cryptographic key pair directly within the device's Secure Enclave.
-* **Out-of-Band Key Exchange:** Establishes secure connections by scanning a peer's public key via an embedded, VisionKit-powered QR code scanner.
-* **Zero-Knowledge Architecture:** No central servers. Your identity, contacts, and encrypted messages (AES-GCM) live entirely within your local SwiftData container.
-* **Strict Data Integrity:** Cascading deletion rules ensure no orphaned data remains when a connection is severed.
-
+* **Offline-First (BLE Mesh):** Communicate exclusively via Bluetooth Low Energy. No Wi-Fi or cellular data required. Perfect for off-grid environments, crowded events, or privacy-critical local meetings.
+* **Local Identity Forging:** Generates a secure P256 cryptographic key pair directly within the device's hardware (Secure Enclave). No phone numbers or emails required.
+* **Out-of-Band Key Exchange:** Establishes secure connections by scanning a peer's public key via an embedded, VisionKit-powered QR code scanner. Prevents Man-In-The-Middle (MITM) attacks.
+* **Consent-Based "Intercom":** Built-in spam prevention. Unknown cryptographic handshakes are held in volatile RAM until explicitly approved by the user.
+* **Anti-Replay Attack Mechanism:** Packets are injected with dynamic timestamps before encryption, rendering intercepted radio waves useless for future replay attacks.
+* **Zero-Knowledge Architecture:** Your identity, contacts, and encrypted messages (AES-GCM) live entirely within your local SwiftData container. Messages are encrypted at rest
+  
 ## 🛠 Tech Stack
 
-* **Platform:** iOS 26.0+
+* **Platform:** iOS 26.0+ (Requires Physical Device)
 * **Framework:** SwiftUI
-* **Architecture:** MVVM with Dependency Injection
+* **Architecture:** MVVM with Dependency Injection (`AppContainer`)
 * **Persistence:** SwiftData (`@Model`, `@Query`, `#Predicate`)
-* **Security:** `CryptoKit` (P256 Key Agreement, AES-GCM)
+* **Security & Cryptography:** `CryptoKit` (P256 Key Agreement, AES-GCM, SHA256 hashing) & `Security` (Keychain).
+* **Networking:** `CoreBluetooth` (Dynamic MTU Chunking, Background Restoration).
 * **Vision & CoreImage:** `VisionKit` (`DataScannerViewController`) for scanning, `CoreImage` for QR generation.
-
-## 🚀 Getting Started
-
-### Prerequisites
-* Xcode 15.0 or later.
-* An actual iOS device (Camera access is required for the QR Scanner; the iOS Simulator does not support rear camera hardware).
