@@ -41,7 +41,7 @@ final class UserService: UserServiceProtocol {
     }
     
     func createOwnProfile(name: String) async throws -> User {
-        let publicKey = cryptoService.generateKeyPair()
+        let (publicKey, _) = try cryptoService.generateKeyPair()
         let newUser = User(name: name.trimmingCharacters(in: .whitespacesAndNewlines), publicKey: publicKey, isMe: true)
         modelContext.insert(newUser)
         try modelContext.save()
