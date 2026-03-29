@@ -271,8 +271,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafeCons/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SafeCons;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Necessário para encontrar conexões seguras próximas.";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Necessário para escanear a chave pública de suas conexões.";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This terminal requires Bluetooth access to detect and establish nearby secure connections.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This terminal requires camera access to scan the public keys of your connections.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -310,8 +310,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafeCons/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SafeCons;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Necessário para encontrar conexões seguras próximas.";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Necessário para escanear a chave pública de suas conexões.";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This terminal requires Bluetooth access to detect and establish nearby secure connections.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This terminal requires camera access to scan the public keys of your connections.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
