@@ -11,6 +11,7 @@ import UIKit
 
 @MainActor
 protocol NetworkServiceProtocol {
+    var connectedPeers: [UUID: CBPeripheral] { get }
     var radioState: RadioState { get }
     
     func startScanning()
@@ -33,7 +34,7 @@ final class NetworkService: NSObject, NetworkServiceProtocol {
     var radioState: RadioState = .offline
     
     private var peerCharacteristics: [UUID: CBCharacteristic] = [:]
-    private var connectedPeers: [UUID: CBPeripheral] = [:]
+    var connectedPeers: [UUID: CBPeripheral] = [:]
     
     private var incomingChunks: [UUID: [MessageChunk]] = [:]
     
@@ -339,7 +340,6 @@ extension NetworkService: CBCentralManagerDelegate, CBPeripheralManagerDelegate,
         self.connectedPeers.removeValue(forKey: peripheral.identifier)
         self.peerCharacteristics.removeValue(forKey: peripheral.identifier)
         
-            // 3. Resgate da Máquina de Estado
         if self.connectedPeers.isEmpty {
             print("Central Terminal: No peers remaining. Resuming scan...")
             self.radioState = .scanning

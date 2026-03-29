@@ -85,13 +85,19 @@ struct ContactsView: View {
                         ContactCardView(
                             contact: item.contact,
                             colors: viewModel.generateCardColors(name: item.contact.name),
-                            isOnline: AppContainer.shared.isContactOnline(publicKey: item.contact.publicKey)
+                            isOnline: viewModel.isPeerConnected(publicKey: item.contact.publicKey)
                         )
                     }
                     .buttonStyle(.plain)
                 }
             }
             .padding(.vertical)
+        }
+        .refreshable {
+            print("Central Terminal: Manual radar sweep initiated by user.")
+            viewModel.refreshScan()
+            ProgressView()
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
         }
     }
 

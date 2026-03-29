@@ -25,10 +25,12 @@ final class ContactsViewModel: ContactsViewModelProtocol {
     
     private let userService: UserServiceProtocol
     private let cryptoService: CryptoServiceProtocol
+    private let networkService: NetworkServiceProtocol
     
-    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol) {
+    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol) {
         self.userService = userService
         self.cryptoService = cryptoService
+        self.networkService = networkService
     }
     
     func addContact(scannedCode: String) async throws {
@@ -48,5 +50,12 @@ final class ContactsViewModel: ContactsViewModelProtocol {
         cryptoService.generateIdentityColors(from: name)
     }
     
+    func isPeerConnected(publicKey: Data) -> Bool {
+        _ = networkService.connectedPeers
+        return AppContainer.shared.isContactOnline(publicKey: publicKey)
+    }
     
+    func refreshScan() {
+        networkService.startScanning()
+    }
 }
