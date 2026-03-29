@@ -18,6 +18,7 @@ struct SafeConsApp: App {
             RootView(container: container)
                 .fontDesign(.monospaced)
                 .modifier(PrivacySnapshotModifier())
+                .tint(.accent)
         }
         .modelContainer(container.modelContainer)
     }

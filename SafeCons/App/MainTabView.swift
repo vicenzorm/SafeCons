@@ -22,7 +22,7 @@ struct MainTabView: View {
             
             Tab("Intercom", systemImage: "sensor.tag.radiowaves.forward") {
                 NavigationStack {
-                    IntercomView()
+                    IntercomView(requestManager: container.requestManager, container: container)
                 }
             }
             .badge(container.requestManager.pendingRequests.count)

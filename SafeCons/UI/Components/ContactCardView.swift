@@ -22,22 +22,24 @@ struct ContactCardView: View {
         HStack(spacing: 16) {
             
             ZStack(alignment: .bottomTrailing) {
-                Circle()
-                    .fill(LinearGradient(
-                        colors: colors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 46, height: 46)
-                    .overlay(
-                        Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                
-                Text(String(contact.name.prefix(1)).uppercased())
-                    .font(.headline)
-                    .bold()
-                    .foregroundStyle(.white)
-                    .shadow(radius: 2)
+                ZStack (alignment: .bottomLeading){
+                    Circle()
+                        .fill(LinearGradient(
+                            colors: colors,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                        .frame(width: 46, height: 46)
+                        .overlay(
+                            Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                    
+                    Text(String(contact.name.prefix(1)).uppercased())
+                        .font(.headline)
+                        .bold()
+                        .foregroundStyle(.white)
+                        .shadow(radius: 2)
+                }
                 
                 Circle()
                     .fill(isOnline ? Color.green : Color.gray)
@@ -52,14 +54,6 @@ struct ContactCardView: View {
                 Text(contact.name)
                     .font(.headline)
                     .foregroundStyle(.primary)
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 10))
-                    Text("Túnel P256")
-                        .font(.caption2)
-                }
-                .foregroundStyle(.gray)
             }
             
             Spacer()

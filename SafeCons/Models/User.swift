@@ -28,4 +28,10 @@ final class User: Identifiable {
         self.isMe = isMe
         self.chats = []
     }
+    
+    var activeChat: Chat? {
+        chats.first { chat in
+            chat.participants.contains(where: \.isMe)
+        }
+    }
 }

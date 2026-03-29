@@ -24,4 +24,6 @@ final class Chat: Identifiable {
         self.messages = []
         self.updatedAt = Date.now
     }
+    
+    
 }

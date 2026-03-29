@@ -8,14 +8,14 @@ import SwiftUI
 
 struct RadioStatusView: View {
     var isTunnelActive: Bool
-    
+
     var body: some View {
         HStack(spacing: 6) {
             Circle()
                 .fill(isTunnelActive ? Color.green : Color.gray)
                 .frame(width: 8, height: 8)
-            
-            Text(isTunnelActive ? "Túnel Estabelecido" : "Rádio Desconectado")
+
+            Text(isTunnelActive ? "Connection Established" : "Connection Lost")
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.gray)
         }

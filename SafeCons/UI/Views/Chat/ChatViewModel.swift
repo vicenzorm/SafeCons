@@ -65,7 +65,7 @@ final class ChatViewModel: ChatViewModelProtocol {
     
     func decryptMessage(message: Message, chat: Chat) -> String {
         guard message.isEncrypted else {
-            return String(data: message.content, encoding: .utf8) ?? "Erro de codificação"
+            return String(data: message.content, encoding: .utf8) ?? "error at encoding message"
         }
         if let otherPublicKey = chat.participants.first(where: { !$0.isMe })?.publicKey {
             do {

@@ -14,6 +14,7 @@ protocol ContactsViewModelProtocol {
     var isShowingCamera: Bool { get set }
     
     func addContact(scannedCode: String) async throws
+    func removeContact(contact: User)
 }
 
 @Observable
@@ -58,5 +59,26 @@ final class ContactsViewModel: ContactsViewModelProtocol {
     func refreshScan() {
         networkService.startScanning()
         AppContainer.shared.broadcastHeartbeat()
+    }
+    
+    func makeChatViewModel(chat: Chat) -> ChatViewModel {
+        return ChatViewModel(
+            cryptoService: self.cryptoService,
+            networkService: self.networkService,
+            chat: chat
+        )
+    }
+    
+    func removeContact(contact: User) {
+        do {
+            try userService.deleteContact(publicKey: contact.publicKey)
+            
+            let hash = cryptoService.hashPublicKey(contact.publicKey)
+            AppContainer.shared.activePublicKeys.removeValue(forKey: hash)
+            
+            networkService.disconnectAllPeers()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }

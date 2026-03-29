@@ -15,6 +15,7 @@ protocol UserServiceProtocol {
     func createContact(name: String, publicKey: Data) async throws -> User
     func fetchOwnUserData() throws -> User
     func fetchContact(publicKey: Data) throws-> User?
+    func deleteContact(publicKey: Data) throws
 }
 
 @MainActor
@@ -78,5 +79,14 @@ final class UserService: UserServiceProtocol {
         let predicate = #Predicate<User> { $0.publicKey == publicKey }
         let descriptor = FetchDescriptor(predicate: predicate)
         return try modelContext.fetch(descriptor).first
+    }
+    
+    func deleteContact(publicKey: Data) throws {
+        let predicate = #Predicate<User> { $0.publicKey == publicKey }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        let results = try modelContext.fetch(descriptor)
+        guard let userToDelete = results.first else { return }
+        modelContext.delete(userToDelete)
+        try modelContext.save()
     }
 }
