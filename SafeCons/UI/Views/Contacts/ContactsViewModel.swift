@@ -57,5 +57,6 @@ final class ContactsViewModel: ContactsViewModelProtocol {
     
     func refreshScan() {
         networkService.startScanning()
+        AppContainer.shared.broadcastHeartbeat()
     }
 }

@@ -9,6 +9,7 @@ import Foundation
 @MainActor
 protocol ChatViewModelProtocol {
     var newMessage: String { get set }
+    var isTunnelActive: Bool { get }
     
     func saveMessage(user: User, chat: Chat)
     func decryptMessage(message: Message, chat: Chat) -> String
@@ -24,6 +25,15 @@ final class ChatViewModel: ChatViewModelProtocol {
     private let cryptoService: CryptoServiceProtocol
     
     private let currentChat: Chat
+    
+    var isTunnelActive: Bool {
+        _ = networkService.connectedPeers
+        
+        guard let targetContact = currentChat.participants.first(where: { !$0.isMe }) else {
+            return false
+        }
+        return AppContainer.shared.isContactOnline(publicKey: targetContact.publicKey)
+    }
     
     init(cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol, chat: Chat) {
         self.cryptoService = cryptoService

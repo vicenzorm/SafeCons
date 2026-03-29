@@ -71,6 +71,9 @@ class AppContainer {
             if currentTimestamp - parsedData.timestamp > 60 {
                 return
             }
+            if parsedData.message == "[SYS_PING]" {
+                return
+            }
             
             if let existingContact = try self.userService.fetchContact(publicKey: envelope.senderPublicKey) {
                 
@@ -151,5 +154,27 @@ class AppContainer {
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
         
         UNUserNotificationCenter.current().add(request)
+    }
+    
+    func broadcastHeartbeat() {
+        Task { @MainActor in
+            let meDescriptor = FetchDescriptor<User>(predicate: #Predicate { $0.isMe })
+            let contactsDescriptor = FetchDescriptor<User>(predicate: #Predicate { !$0.isMe  })
+            
+            guard let me = try? self.modelContext.fetch(meDescriptor).first,
+                  let contacts = try? self.modelContext.fetch(contactsDescriptor) else { return }
+            
+            for contact in contacts {
+                let payload = "\(Int(Date().timeIntervalSince1970))|\(me.name)|[SYS_PING]"
+//                guard let payloadData = payload.data(using: .utf8) else { continue }
+                
+                guard let encrypted = try? self.cryptoService.encryptMessage(text: payload, recipientPublicKey: contact.publicKey) else { continue }
+                
+                let envelope = TransportEnvelope(senderPublicKey: me.publicKey, encryptedPayload: encrypted)
+                if let data = try? JSONEncoder().encode(envelope) {
+                    self.networkService.send(payload: data)
+                }
+            }
+        }
     }
 }

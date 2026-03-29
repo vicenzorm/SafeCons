@@ -96,7 +96,6 @@ struct ContactsView: View {
         .refreshable {
             print("Central Terminal: Manual radar sweep initiated by user.")
             viewModel.refreshScan()
-            ProgressView()
             try? await Task.sleep(nanoseconds: 1_000_000_000)
         }
     }

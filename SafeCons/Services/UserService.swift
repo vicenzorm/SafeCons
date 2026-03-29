@@ -61,7 +61,6 @@ final class UserService: UserServiceProtocol {
         return newContact
     }
     
-    
     func fetchOwnUserData() throws -> User {
         let predicate = #Predicate<User> { $0.isMe == true }
         let descriptor = FetchDescriptor(predicate: predicate)
