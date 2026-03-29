@@ -16,6 +16,7 @@ protocol UserServiceProtocol {
     func fetchOwnUserData() throws -> User
     func fetchContact(publicKey: Data) throws-> User?
     func deleteContact(publicKey: Data) throws
+    func nukeDB() throws
 }
 
 @MainActor
@@ -87,6 +88,26 @@ final class UserService: UserServiceProtocol {
         let results = try modelContext.fetch(descriptor)
         guard let userToDelete = results.first else { return }
         modelContext.delete(userToDelete)
+        try modelContext.save()
+    }
+    
+    func nukeDB() throws {
+        let allChats = try modelContext.fetch(FetchDescriptor<Chat>())
+        
+        for chat in allChats {
+            chat.participants.removeAll()
+            modelContext.delete(chat)
+        }
+        
+        let allMessages = try modelContext.fetch(FetchDescriptor<Message>())
+        for msg in allMessages {
+            modelContext.delete(msg)
+        }
+        
+        let allUsers = try modelContext.fetch(FetchDescriptor<User>())
+        for user in allUsers {
+            modelContext.delete(user)
+        }
         try modelContext.save()
     }
 }

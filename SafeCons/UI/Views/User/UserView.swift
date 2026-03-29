@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UserView: View {
     
-    var viewModel: UserViewModel
+    @Bindable var viewModel: UserViewModel
     
     var body: some View {
         VStack(spacing: 24) {
@@ -92,7 +92,26 @@ struct UserView: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 32)
             
+            Button(role: .destructive) {
+                viewModel.showResetConfirmation.toggle()
+            } label: {
+                Label("Factory Reset", systemImage: "flame.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
+            .padding(.horizontal, 32)
+            .alert("Self-Destruct Protocol", isPresented: $viewModel.showResetConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Purge Terminal", role: .destructive) {
+                    viewModel.factoryReset()
+                }
+            } message: {
+                Text("This action will incinerate your P256 Private Key and wipe all radio history from the disk.\n\nDue to local-first encryption, recovering this data will be MATHEMATICALLY IMPOSSIBLE.\n\nDo you wish to proceed?")
+            }
             Spacer()
+            
         }
         .task {
             viewModel.loadMyProfile()

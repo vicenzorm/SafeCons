@@ -15,8 +15,11 @@ protocol UserViewModelProtocol {
     var qrCode: UIImage? { get }
     var errorMessage: String? { get }
     
+    var showResetConfirmation: Bool { get set }
+    
     func loadMyProfile()
     func generateColorsForProfile(from name: String) -> [Color]
+    func factoryReset()
 }
 
 @Observable
@@ -25,9 +28,11 @@ final class UserViewModel: UserViewModelProtocol {
     var userName: String = ""
     var qrCode: UIImage?
     var errorMessage: String?
+    var showResetConfirmation: Bool = false
     
     private let userService: UserServiceProtocol
     private let cryptoService: CryptoServiceProtocol
+    
     
     init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol) {
         self.userService = userService
@@ -70,5 +75,19 @@ final class UserViewModel: UserViewModelProtocol {
     
     func generateColorsForProfile(from name: String) -> [Color] {
         cryptoService.generateIdentityColors(from: name)
+    }
+    
+    func factoryReset() {
+        do {
+            try userService.nukeDB()
+            
+            KeychainManager.delete()
+            
+            AppContainer.shared.networkService.disconnectAllPeers()
+            
+            fatalError("Terminal Reseted")
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
     }
 }
