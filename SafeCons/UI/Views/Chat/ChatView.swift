@@ -65,6 +65,10 @@ struct ChatView: View {
             TextField("Send package...", text: $viewModel.newMessage)
                 .autocorrectionDisabled()
                 .textFieldStyle(.plain)
+                .onSubmit {
+                    guard canSendMessage, let currentUser else { return }
+                    viewModel.saveMessage(user: currentUser, chat: chat)
+                }
             
             Button {
                 guard let currentUser else { return }
@@ -75,6 +79,7 @@ struct ChatView: View {
                     .foregroundStyle(canSendMessage ? .green : .gray)
             }
             .disabled(!canSendMessage)
+            .keyboardShortcut(.defaultAction)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)

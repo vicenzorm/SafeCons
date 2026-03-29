@@ -12,18 +12,18 @@ struct UserView: View {
     @Bindable var viewModel: UserViewModel
     
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 16) {
             
             VStack(spacing: 8) {
                 Image(systemName: "antenna.radiowaves.left.and.right")
                     .font(.system(size: 32))
                     .foregroundStyle(.green)
                 
-                Text("Beacon de Transmissão")
+                Text("Transmission Beacon")
                     .font(.headline)
                     .foregroundStyle(.primary)
                 
-                Text("Apresente este terminal para iniciar o handshake físico (Out-of-Band).")
+                Text("Present this terminal to initiate a physical handshake (Out-of-Band).")
                     .font(.caption)
                     .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)
@@ -44,8 +44,6 @@ struct UserView: View {
                             .stroke(Color.red.opacity(0.5), lineWidth: 1)
                     )
             }
-            
-            Spacer()
             
             ZStack {
                 RoundedRectangle(cornerRadius: 24)
@@ -80,7 +78,7 @@ struct UserView: View {
                         VStack(spacing: 16) {
                             ProgressView()
                                 .tint(.green)
-                            Text("Forjando matriz...")
+                            Text("Creating QRCODE...")
                                 .font(.caption)
                                 .foregroundStyle(.gray)
                         }
@@ -117,6 +115,9 @@ struct UserView: View {
             viewModel.loadMyProfile()
         }
     }
-    
-    
+}
+
+#Preview {
+    let container = AppContainer.shared
+    UserView(viewModel: UserViewModel(userService: container.userService, cryptoService: container.cryptoService))
 }

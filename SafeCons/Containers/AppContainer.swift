@@ -75,6 +75,14 @@ class AppContainer {
                 return
             }
             
+            if parsedData.message == "[SYS_KNOCK]" {
+                if try self.userService.fetchContact(publicKey: envelope.senderPublicKey) == nil {
+                    self.requestManager.receiveRequest(publicKey: envelope.senderPublicKey, payload: envelope.encryptedPayload, senderName: parsedData.senderName)
+                    triggerPrivateNotification()
+                }
+                return 
+            }
+            
             if let existingContact = try self.userService.fetchContact(publicKey: envelope.senderPublicKey) {
                 
                 if let chat = existingContact.chats.first(where: { sala in
@@ -166,7 +174,6 @@ class AppContainer {
             
             for contact in contacts {
                 let payload = "\(Int(Date().timeIntervalSince1970))|\(me.name)|[SYS_PING]"
-//                guard let payloadData = payload.data(using: .utf8) else { continue }
                 
                 guard let encrypted = try? self.cryptoService.encryptMessage(text: payload, recipientPublicKey: contact.publicKey) else { continue }
                 
@@ -177,4 +184,20 @@ class AppContainer {
             }
         }
     }
+    
+    func sendKnock(to contact: User) {
+        Task { @MainActor in
+            guard let me = try? self.userService.fetchOwnUserData() else { return }
+            
+            let payload = "\(Int(Date().timeIntervalSince1970))|\(me.name)|[SYS_KNOCK]"
+            
+            guard let encrypted = try? self.cryptoService.encryptMessage(text: payload, recipientPublicKey: contact.publicKey) else { return }
+            
+            let envelope = TransportEnvelope(senderPublicKey: me.publicKey, encryptedPayload: encrypted)
+            if let data = try? JSONEncoder().encode(envelope) {
+                self.networkService.send(payload: data)
+            }
+        }
+    }
+    
 }

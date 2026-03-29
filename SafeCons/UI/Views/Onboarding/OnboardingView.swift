@@ -15,8 +15,6 @@ struct OnboardingView: View {
     var body: some View {
         VStack {
             Spacer()
-            
-                // "Mensagem" do Sistema informando o contexto de segurança
             VStack(spacing: 16) {
                 Image(systemName: "key.viewfinder")
                     .font(.system(size: 48))
@@ -24,11 +22,11 @@ struct OnboardingView: View {
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Terminal SafeCons")
+                        Text("SafeCons Terminal")
                             .font(.caption)
                             .foregroundStyle(.gray)
                         
-                        Text("Bem-vindo(a). A rede opera 100% offline.\nPara forjar suas chaves criptográficas (P256) no Secure Enclave, insira como quer ser chamado abaixo:")
+                        Text("Welcome. The app operates 100% offline.\nTo forge your cryptographic keys (P256) inside the Secure Enclave, enter your designated callsign below:")
                             .padding(.horizontal, 14)
                             .padding(.vertical, 10)
                             .background(Color(.systemGray6))
@@ -39,6 +37,7 @@ struct OnboardingView: View {
                                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                             )
                     }
+                    .frame(maxWidth: .infinity)
                     Spacer()
                 }
                 .padding(.horizontal)
@@ -61,6 +60,7 @@ struct OnboardingView: View {
                     .padding(.horizontal)
                 }
             }
+            .frame(maxWidth: .infinity)
             
             Spacer()
             
@@ -74,10 +74,14 @@ struct OnboardingView: View {
                     ProgressView()
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    TextField("Identificação de rádio...", text: $viewModel.userName)
+                    TextField("Radio callsign", text: $viewModel.userName)
                         .autocorrectionDisabled()
                         .textFieldStyle(.plain)
                         .disabled(viewModel.isCreatingProfile)
+                        .onSubmit {
+                            guard viewModel.userName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isCreatingProfile else { return }
+                            onProfileCreated()
+                        }
                 }
                 
                 Button {
@@ -93,6 +97,7 @@ struct OnboardingView: View {
                         )
                 }
                 .disabled(viewModel.userName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isCreatingProfile)
+                .keyboardShortcut(.defaultAction)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)

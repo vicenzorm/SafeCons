@@ -22,25 +22,16 @@ struct ContactCardView: View {
         HStack(spacing: 16) {
             
             ZStack(alignment: .bottomTrailing) {
-                ZStack (alignment: .bottomLeading){
-                    Circle()
-                        .fill(LinearGradient(
-                            colors: colors,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                        .frame(width: 46, height: 46)
-                        .overlay(
-                            Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                    
-                    Text(String(contact.name.prefix(1)).uppercased())
-                        .font(.headline)
-                        .bold()
-                        .foregroundStyle(.white)
-                        .shadow(radius: 2)
-                }
-                
+                Circle()
+                    .fill(LinearGradient(
+                        colors: colors,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                    .frame(width: 46, height: 46)
+                    .overlay(
+                        Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
                 Circle()
                     .fill(isOnline ? Color.green : Color.gray)
                     .frame(width: 14, height: 14)

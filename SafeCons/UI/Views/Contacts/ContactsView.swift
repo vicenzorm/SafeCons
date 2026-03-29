@@ -20,7 +20,7 @@ struct ContactsView: View {
                     contactsList
                 }
             }
-            .navigationTitle("Connections")
+            .navigationTitle("Contacts")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -57,7 +57,9 @@ struct ContactsView: View {
                             Button(role: .destructive) {
                                 viewModel.removeContact(contact: contact)
                             } label: {
-                                Label("Delete contact", systemImage: "trash.fill")
+                                Label("Delete Contact", systemImage: "trash.fill")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
                             }
                         }
                     }

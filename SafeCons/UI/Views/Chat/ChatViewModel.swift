@@ -81,7 +81,11 @@ final class ChatViewModel: ChatViewModelProtocol {
     private func extractMessageFromPayload(_ payload: String) -> String {
         let parts = payload.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
         if parts.count == 3 {
-            return String(parts[2])
+            let messageContent = String(parts[2])
+            if messageContent == "[SYS_KNOCK]" {
+                return "Terminal handshake accepted. Secure channel established."
+            }
+            return messageContent
         }
         return String(parts[1])
     }

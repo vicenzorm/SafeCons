@@ -43,7 +43,8 @@ final class ContactsViewModel: ContactsViewModelProtocol {
             self.showAlert = true
             return
         }
-        _ = try await userService.createContact(name: payload.name, publicKey: payload.publicKey)
+        let newContact = try await userService.createContact(name: payload.name, publicKey: payload.publicKey)
+        AppContainer.shared.sendKnock(to: newContact)
         
     }
     
