@@ -160,7 +160,7 @@ extension NetworkService: CBCentralManagerDelegate, CBPeripheralManagerDelegate,
                 self.connectedPeers.updateValue(peripheral, forKey: peripheral.identifier)
                 self.radioState = .connected
                 print("Central Terminal: Radio handshake complete. Secure Tunnel established with \(peripheral.identifier).")
-                AppContainer.shared.broadcastHeartbeat()
+                print("Central Terminal: Handshake complete. Awaiting heartbeat trigger from upper layer.")
             }
         }
     }
