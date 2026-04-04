@@ -16,7 +16,7 @@ struct MainTabView: View {
         TabView {
             Tab("Contacts", systemImage: "bubble.left.and.bubble.right.fill") {
                 NavigationStack {
-                    ContactsView(viewModel: ContactsViewModel(userService: container.userService, cryptoService: container.cryptoService, networkService: container.networkService, messageRepository: container.messageRepository))
+                    ContactsView(viewModel: ContactsViewModel(userService: container.userService, cryptoService: container.cryptoService, networkService: container.networkService, messageRepository: container.messageRepository, presenceManager: container.presenceManager))
                 }
             }
             
