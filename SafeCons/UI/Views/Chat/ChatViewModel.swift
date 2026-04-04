@@ -10,10 +10,9 @@ import Foundation
 protocol ChatViewModelProtocol {
     var newMessage: String { get set }
     var isTunnelActive: Bool { get }
-    var encryptedPayloadForDecryption: Data? { get set }
 
     func saveMessage()
-    func decryptMessage() -> String
+    func decryptMessage(encryptedData: Data, isEncrypted: Bool) -> String
 }
 
 @Observable
@@ -21,7 +20,6 @@ protocol ChatViewModelProtocol {
 final class ChatViewModel: ChatViewModelProtocol {
 
     var newMessage: String = ""
-    var encryptedPayloadForDecryption: Data?
 
     private let networkService: NetworkServiceProtocol
     private let cryptoService: CryptoServiceProtocol
@@ -94,14 +92,14 @@ final class ChatViewModel: ChatViewModelProtocol {
         }
     }
 
-    func decryptMessage() -> String {
-        guard let encryptedPayloadForDecryption else {
-            return "error at decrypting"
+    func decryptMessage(encryptedData: Data, isEncrypted: Bool) -> String {
+        guard isEncrypted else {
+            return String(data: encryptedData, encoding: .utf8) ?? "error at encoding message"
         }
 
         do {
             let decryptedMessage = try cryptoService.decryptMessage(
-                encryptedData: encryptedPayloadForDecryption,
+                encryptedData: encryptedData,
                 senderPublicKey: targetPublicKey
             )
             return extractMessageFromPayload(decryptedMessage)
