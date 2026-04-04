@@ -1,83 +1,116 @@
-    //
-    //  ChatViewModel.swift
-    //  SafeCons
-    //
-    //  Created by Vicenzo Másera on 27/03/26.
-    //
+//
+//  ChatViewModel.swift
+//  SafeCons
+//
+//  Created by Vicenzo Másera on 27/03/26.
+//
 import Foundation
 
 @MainActor
 protocol ChatViewModelProtocol {
     var newMessage: String { get set }
     var isTunnelActive: Bool { get }
-    
-    func saveMessage(user: User, chat: Chat)
-    func decryptMessage(message: Message, chat: Chat) -> String
+    var encryptedPayloadForDecryption: Data? { get set }
+
+    func saveMessage()
+    func decryptMessage() -> String
 }
 
 @Observable
 @MainActor
 final class ChatViewModel: ChatViewModelProtocol {
-    
+
     var newMessage: String = ""
-    
+    var encryptedPayloadForDecryption: Data?
+
     private let networkService: NetworkServiceProtocol
     private let cryptoService: CryptoServiceProtocol
-    
-    private let currentChat: Chat
-    
+    private let messageRepository: MessageRepositoryProtocol
+
+    private let chatId: UUID
+    private let currentUserId: UUID
+    private let currentUserName: String
+    private let currentUserPublicKey: Data
+    private let targetPublicKey: Data
+
     var isTunnelActive: Bool {
         _ = networkService.connectedPeers
-        
-        guard let targetContact = currentChat.participants.first(where: { !$0.isMe }) else {
-            return false
-        }
-        return AppContainer.shared.isContactOnline(publicKey: targetContact.publicKey)
+        return AppContainer.shared.isContactOnline(publicKey: targetPublicKey)
     }
-    
-    init(cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol, chat: Chat) {
+
+    init(
+        cryptoService: CryptoServiceProtocol,
+        networkService: NetworkServiceProtocol,
+        messageRepository: MessageRepositoryProtocol,
+        chatId: UUID,
+        currentUserId: UUID,
+        currentUserName: String,
+        currentUserPublicKey: Data,
+        targetPublicKey: Data
+    ) {
         self.cryptoService = cryptoService
         self.networkService = networkService
-        self.currentChat = chat
+        self.messageRepository = messageRepository
+        self.chatId = chatId
+        self.currentUserId = currentUserId
+        self.currentUserName = currentUserName
+        self.currentUserPublicKey = currentUserPublicKey
+        self.targetPublicKey = targetPublicKey
     }
-    
-    func saveMessage(user: User, chat: Chat) {
-        let otherUser = chat.participants.first(where: { !$0.isMe })
-        if let otherUser {
+
+    func saveMessage() {
+        do {
+            let timestamp = Int(Date().timeIntervalSince1970)
+            let payloadToEncrypt = "\(timestamp)|\(currentUserName)|\(newMessage)"
+
+            let encryptedData = try cryptoService.encryptMessage(
+                text: payloadToEncrypt,
+                recipientPublicKey: targetPublicKey
+            )
+
             do {
-                let timestamp = Int(Date().timeIntervalSince1970)
-                let payloadToEncrypt = "\(timestamp)|\(user.name)|\(newMessage)"
-                let encryptedData = try cryptoService.encryptMessage(text: payloadToEncrypt, recipientPublicKey: otherUser.publicKey)
-                let message = Message(sender: user, content: encryptedData, isEncrypted: true)
-                chat.messages.append(message)
-                
-                let envelope = TransportEnvelope(senderPublicKey: user.publicKey, encryptedPayload: encryptedData)
-                if let envelopeData = try? JSONEncoder().encode(envelope) {
-                    networkService.send(payload:envelopeData)
-                }
+                try messageRepository.saveMessage(
+                    senderId: currentUserId,
+                    chatId: chatId,
+                    content: encryptedData,
+                    isEncrypted: true
+                )
             } catch {
                 print(error)
             }
-        }
-        chat.updatedAt = .now
-        newMessage = ""
-    }
-    
-    func decryptMessage(message: Message, chat: Chat) -> String {
-        guard message.isEncrypted else {
-            return String(data: message.content, encoding: .utf8) ?? "error at encoding message"
-        }
-        if let otherPublicKey = chat.participants.first(where: { !$0.isMe })?.publicKey {
-            do {
-                let decryptedMessage = try cryptoService.decryptMessage(encryptedData: message.content, senderPublicKey: otherPublicKey)
-                return extractMessageFromPayload(decryptedMessage)
-            } catch {
-                print(error)
+
+            let envelope = TransportEnvelope(
+                senderPublicKey: currentUserPublicKey,
+                encryptedPayload: encryptedData
+            )
+
+            if let envelopeData = try? JSONEncoder().encode(envelope) {
+                networkService.send(payload: envelopeData)
             }
+
+            newMessage = ""
+        } catch {
+            print(error)
         }
-        return "error at decrypting"
     }
-    
+
+    func decryptMessage() -> String {
+        guard let encryptedPayloadForDecryption else {
+            return "error at decrypting"
+        }
+
+        do {
+            let decryptedMessage = try cryptoService.decryptMessage(
+                encryptedData: encryptedPayloadForDecryption,
+                senderPublicKey: targetPublicKey
+            )
+            return extractMessageFromPayload(decryptedMessage)
+        } catch {
+            print(error)
+            return "error at decrypting"
+        }
+    }
+
     private func extractMessageFromPayload(_ payload: String) -> String {
         let parts = payload.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
         if parts.count == 3 {
@@ -87,6 +120,6 @@ final class ChatViewModel: ChatViewModelProtocol {
             }
             return messageContent
         }
-        return String(parts[1])
+        return parts.count > 1 ? String(parts[1]) : payload
     }
 }
