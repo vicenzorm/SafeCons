@@ -27,11 +27,13 @@ final class ContactsViewModel: ContactsViewModelProtocol {
     private let userService: UserServiceProtocol
     private let cryptoService: CryptoServiceProtocol
     private let networkService: NetworkServiceProtocol
+    private let messageRepository: MessageRepositoryProtocol
     
-    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol) {
+    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol, messageRepository: MessageRepositoryProtocol) {
         self.userService = userService
         self.cryptoService = cryptoService
         self.networkService = networkService
+        self.messageRepository = messageRepository
     }
     
     func addContact(scannedCode: String) async throws {
@@ -63,10 +65,20 @@ final class ContactsViewModel: ContactsViewModelProtocol {
     }
     
     func makeChatViewModel(chat: Chat) -> ChatViewModel {
+        guard let currentUser = chat.participants.first(where: { $0.isMe }),
+              let targetUser = chat.participants.first(where: { !$0.isMe }) else {
+            preconditionFailure("Chat participants are inconsistent")
+        }
+
         return ChatViewModel(
             cryptoService: self.cryptoService,
             networkService: self.networkService,
-            chat: chat
+            messageRepository: self.messageRepository,
+            chatId: chat.id,
+            currentUserId: currentUser.id,
+            currentUserName: currentUser.name,
+            currentUserPublicKey: currentUser.publicKey,
+            targetPublicKey: targetUser.publicKey
         )
     }
     
