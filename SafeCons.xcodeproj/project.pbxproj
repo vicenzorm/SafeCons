@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		C56EA31B2F81AD3E00BC877A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C55963212F7625B5001E7E68 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C55963282F7625B5001E7E68;
+			remoteInfo = SafeCons;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		C55963292F7625B5001E7E68 /* SafeCons.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SafeCons.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C56EA3172F81AD3E00BC877A /* SafeConsUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SafeConsUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -29,10 +40,22 @@
 			path = SafeCons;
 			sourceTree = "<group>";
 		};
+		C56EA3182F81AD3E00BC877A /* SafeConsUnitTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SafeConsUnitTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		C55963262F7625B5001E7E68 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C56EA3142F81AD3E00BC877A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -46,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				C559632B2F7625B5001E7E68 /* SafeCons */,
+				C56EA3182F81AD3E00BC877A /* SafeConsUnitTests */,
 				C559632A2F7625B5001E7E68 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				C55963292F7625B5001E7E68 /* SafeCons.app */,
+				C56EA3172F81AD3E00BC877A /* SafeConsUnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -83,6 +108,29 @@
 			productReference = C55963292F7625B5001E7E68 /* SafeCons.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C56EA3162F81AD3E00BC877A /* SafeConsUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C56EA31D2F81AD3E00BC877A /* Build configuration list for PBXNativeTarget "SafeConsUnitTests" */;
+			buildPhases = (
+				C56EA3132F81AD3E00BC877A /* Sources */,
+				C56EA3142F81AD3E00BC877A /* Frameworks */,
+				C56EA3152F81AD3E00BC877A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C56EA31C2F81AD3E00BC877A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				C56EA3182F81AD3E00BC877A /* SafeConsUnitTests */,
+			);
+			name = SafeConsUnitTests;
+			packageProductDependencies = (
+			);
+			productName = SafeConsUnitTests;
+			productReference = C56EA3172F81AD3E00BC877A /* SafeConsUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -95,6 +143,10 @@
 				TargetAttributes = {
 					C55963282F7625B5001E7E68 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					C56EA3162F81AD3E00BC877A = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = C55963282F7625B5001E7E68;
 					};
 				};
 			};
@@ -113,12 +165,20 @@
 			projectRoot = "";
 			targets = (
 				C55963282F7625B5001E7E68 /* SafeCons */,
+				C56EA3162F81AD3E00BC877A /* SafeConsUnitTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		C55963272F7625B5001E7E68 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C56EA3152F81AD3E00BC877A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +195,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C56EA3132F81AD3E00BC877A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C56EA31C2F81AD3E00BC877A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C55963282F7625B5001E7E68 /* SafeCons */;
+			targetProxy = C56EA31B2F81AD3E00BC877A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		C55963342F7625B7001E7E68 /* Debug */ = {
@@ -337,6 +412,48 @@
 			};
 			name = Release;
 		};
+		C56EA31E2F81AD3E00BC877A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K7J6QAV9ZN;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Vicenzo.SafeConsUnitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SafeCons.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SafeCons";
+			};
+			name = Debug;
+		};
+		C56EA31F2F81AD3E00BC877A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K7J6QAV9ZN;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Vicenzo.SafeConsUnitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SafeCons.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SafeCons";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -354,6 +471,15 @@
 			buildConfigurations = (
 				C55963372F7625B7001E7E68 /* Debug */,
 				C55963382F7625B7001E7E68 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C56EA31D2F81AD3E00BC877A /* Build configuration list for PBXNativeTarget "SafeConsUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C56EA31E2F81AD3E00BC877A /* Debug */,
+				C56EA31F2F81AD3E00BC877A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
