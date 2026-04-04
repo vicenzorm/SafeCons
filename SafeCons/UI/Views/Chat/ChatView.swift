@@ -13,10 +13,6 @@ struct ChatView: View {
         chat.participants.first(where: { !$0.isMe })?.name ?? "safe connection"
     }
     
-    private var currentUser: User? {
-        chat.participants.first(where: { $0.isMe })
-    }
-    
     private var canSendMessage: Bool {
         !viewModel.newMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         viewModel.isTunnelActive
@@ -44,7 +40,7 @@ struct ChatView: View {
         List {
             ForEach(sortedMessages) { message in
                 MessageRow(
-                    text: viewModel.decryptMessage(message: message, chat: chat),
+                    text: viewModel.decryptMessage(encryptedData: message.content, isEncrypted: message.isEncrypted),
                     isFromCurrentUser: message.sender?.isMe == true
                 )
                 .listRowSeparator(.hidden)
@@ -66,13 +62,12 @@ struct ChatView: View {
                 .autocorrectionDisabled()
                 .textFieldStyle(.plain)
                 .onSubmit {
-                    guard canSendMessage, let currentUser else { return }
-                    viewModel.saveMessage(user: currentUser, chat: chat)
+                    guard canSendMessage else { return }
+                    viewModel.saveMessage()
                 }
             
             Button {
-                guard let currentUser else { return }
-                viewModel.saveMessage(user: currentUser, chat: chat)
+                viewModel.saveMessage()
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 28))
