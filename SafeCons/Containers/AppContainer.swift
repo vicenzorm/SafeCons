@@ -21,6 +21,7 @@ class AppContainer {
     let userService: UserServiceProtocol
     let cryptoService: CryptoServiceProtocol
     let networkService: NetworkServiceProtocol
+    let messageRepository: MessageRepositoryProtocol
     var requestManager: ConnectionRequestManager
     
     var activePublicKeys: [String: Date] = [:]
@@ -38,7 +39,8 @@ class AppContainer {
         
         let requestManager = ConnectionRequestManager()
         self.requestManager = requestManager
-        
+
+        self.messageRepository = MessageRepository(modelContext: modelContext)
         self.userService = UserService(modelContext: modelContext, cryptoService: crypto)
         
         network.startListening { [weak self] payloadData in
