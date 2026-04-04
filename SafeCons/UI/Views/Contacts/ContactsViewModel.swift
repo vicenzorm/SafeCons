@@ -28,25 +28,27 @@ final class ContactsViewModel: ContactsViewModelProtocol {
     private let cryptoService: CryptoServiceProtocol
     private let networkService: NetworkServiceProtocol
     private let messageRepository: MessageRepositoryProtocol
+    private let presenceManager: PresenceManagerProtocol
     
-    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol, messageRepository: MessageRepositoryProtocol) {
+    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol, messageRepository: MessageRepositoryProtocol, presenceManager: PresenceManagerProtocol) {
         self.userService = userService
         self.cryptoService = cryptoService
         self.networkService = networkService
         self.messageRepository = messageRepository
+        self.presenceManager = presenceManager
     }
     
     func addContact(scannedCode: String) async throws {
         guard let data = scannedCode.data(using: .utf8) else { return }
         
         let payload = try JSONDecoder().decode(QRCodePayload.self, from: data)
-        if let existingContact = try userService.fetchContact(publicKey: payload.publicKey) {
+        if (try userService.fetchContact(publicKey: payload.publicKey)) != nil {
             self.errorMessage = "A connection with \(payload.name) already exists"
             self.showAlert = true
             return
         }
         let newContact = try await userService.createContact(name: payload.name, publicKey: payload.publicKey)
-        AppContainer.shared.sendKnock(to: newContact)
+        sendKnock(to: newContact)
         
     }
     
@@ -56,12 +58,13 @@ final class ContactsViewModel: ContactsViewModelProtocol {
     
     func isPeerConnected(publicKey: Data) -> Bool {
         _ = networkService.connectedPeers
-        return AppContainer.shared.isContactOnline(publicKey: publicKey)
+        let hash = cryptoService.hashPublicKey(publicKey)
+        return presenceManager.isContactOnline(publicKeyHash: hash)
     }
     
     func refreshScan() {
         networkService.startScanning()
-        AppContainer.shared.broadcastHeartbeat()
+        broadcastHeartbeat()
     }
     
     func makeChatViewModel(chat: Chat) -> ChatViewModel {
@@ -74,6 +77,7 @@ final class ContactsViewModel: ContactsViewModelProtocol {
             cryptoService: self.cryptoService,
             networkService: self.networkService,
             messageRepository: self.messageRepository,
+            presenceManager: self.presenceManager,
             chatId: chat.id,
             currentUserId: currentUser.id,
             currentUserName: currentUser.name,
@@ -82,12 +86,42 @@ final class ContactsViewModel: ContactsViewModelProtocol {
         )
     }
     
+    private func broadcastHeartbeat() {
+        guard let me = try? userService.fetchOwnUserData() else { return }
+
+        let pingPayload = "\(Int(Date().timeIntervalSince1970))|\(me.name)|[SYS_PING]"
+
+        guard let encrypted = try? cryptoService.encryptMessage(text: pingPayload, recipientPublicKey: me.publicKey) else {
+            return
+        }
+
+        let envelope = TransportEnvelope(senderPublicKey: me.publicKey, encryptedPayload: encrypted)
+        if let data = try? JSONEncoder().encode(envelope) {
+            networkService.send(payload: data)
+        }
+    }
+
+    private func sendKnock(to contact: User) {
+        guard let me = try? userService.fetchOwnUserData() else { return }
+
+        let knockPayload = "\(Int(Date().timeIntervalSince1970))|\(me.name)|[SYS_KNOCK]"
+
+        guard let encrypted = try? cryptoService.encryptMessage(text: knockPayload, recipientPublicKey: contact.publicKey) else {
+            return
+        }
+
+        let envelope = TransportEnvelope(senderPublicKey: me.publicKey, encryptedPayload: encrypted)
+        if let data = try? JSONEncoder().encode(envelope) {
+            networkService.send(payload: data)
+        }
+    }
+
     func removeContact(contact: User) {
         do {
             try userService.deleteContact(publicKey: contact.publicKey)
             
             let hash = cryptoService.hashPublicKey(contact.publicKey)
-            AppContainer.shared.activePublicKeys.removeValue(forKey: hash)
+            presenceManager.clearSeen(publicKeyHash: hash)
             
             networkService.disconnectAllPeers()
         } catch {
