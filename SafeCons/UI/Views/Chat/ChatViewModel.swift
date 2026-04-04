@@ -24,6 +24,7 @@ final class ChatViewModel: ChatViewModelProtocol {
     private let networkService: NetworkServiceProtocol
     private let cryptoService: CryptoServiceProtocol
     private let messageRepository: MessageRepositoryProtocol
+    private let presenceManager: PresenceManagerProtocol
 
     private let chatId: UUID
     private let currentUserId: UUID
@@ -33,13 +34,15 @@ final class ChatViewModel: ChatViewModelProtocol {
 
     var isTunnelActive: Bool {
         _ = networkService.connectedPeers
-        return AppContainer.shared.isContactOnline(publicKey: targetPublicKey)
+        let hash = cryptoService.hashPublicKey(targetPublicKey)
+        return presenceManager.isContactOnline(publicKeyHash: hash)
     }
 
     init(
         cryptoService: CryptoServiceProtocol,
         networkService: NetworkServiceProtocol,
         messageRepository: MessageRepositoryProtocol,
+        presenceManager: PresenceManagerProtocol,
         chatId: UUID,
         currentUserId: UUID,
         currentUserName: String,
@@ -49,6 +52,7 @@ final class ChatViewModel: ChatViewModelProtocol {
         self.cryptoService = cryptoService
         self.networkService = networkService
         self.messageRepository = messageRepository
+        self.presenceManager = presenceManager
         self.chatId = chatId
         self.currentUserId = currentUserId
         self.currentUserName = currentUserName
