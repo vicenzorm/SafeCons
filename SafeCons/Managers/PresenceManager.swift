@@ -14,6 +14,7 @@ protocol PresenceManagerProtocol {
 
     func isContactOnline(publicKeyHash: String) -> Bool
     func markSeen(publicKeyHash: String)
+    func clearSeen(publicKeyHash: String)
     func pruneInactivePublicKeys()
 }
 
@@ -28,10 +29,6 @@ final class PresenceManager: PresenceManagerProtocol {
         startCleanupTimer()
     }
 
-    deinit {
-        cleanupTimer?.invalidate()
-    }
-
     func markSeen(publicKeyHash: String) {
         activePublicKeys[publicKeyHash] = Date()
     }
@@ -39,6 +36,10 @@ final class PresenceManager: PresenceManagerProtocol {
     func isContactOnline(publicKeyHash: String) -> Bool {
         guard let lastSeen = activePublicKeys[publicKeyHash] else { return false }
         return lastSeen.timeIntervalSinceNow > -60
+    }
+
+    func clearSeen(publicKeyHash: String) {
+        activePublicKeys.removeValue(forKey: publicKeyHash)
     }
 
     func pruneInactivePublicKeys() {
