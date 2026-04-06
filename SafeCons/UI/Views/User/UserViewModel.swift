@@ -32,11 +32,13 @@ final class UserViewModel: UserViewModelProtocol {
     
     private let userService: UserServiceProtocol
     private let cryptoService: CryptoServiceProtocol
+    private let networkService: NetworkServiceProtocol
     
     
-    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol) {
+    init(userService: UserServiceProtocol, cryptoService: CryptoServiceProtocol, networkService: NetworkServiceProtocol) {
         self.userService = userService
         self.cryptoService = cryptoService
+        self.networkService = networkService
     }
     
     func loadMyProfile() {
@@ -74,7 +76,21 @@ final class UserViewModel: UserViewModelProtocol {
     }
     
     func generateColorsForProfile(from name: String) -> [Color] {
-        cryptoService.generateIdentityColors(from: name)
+        cryptoService
+            .generateIdentityColors(from: name)
+            .map { color(fromHex: $0) }
+    }
+
+    private func color(fromHex hex: String) -> Color {
+        let sanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "#", with: "")
+        guard sanitized.count == 6, let rgb = UInt64(sanitized, radix: 16) else {
+            return .gray
+        }
+
+        let red = Double((rgb & 0xFF0000) >> 16) / 255.0
+        let green = Double((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = Double(rgb & 0x0000FF) / 255.0
+        return Color(red: red, green: green, blue: blue)
     }
     
     func factoryReset() {
@@ -83,7 +99,7 @@ final class UserViewModel: UserViewModelProtocol {
             
             KeychainManager.delete()
             
-            AppContainer.shared.networkService.disconnectAllPeers()
+            networkService.disconnectAllPeers()
             
             fatalError("Terminal Reseted")
         } catch {
