@@ -25,7 +25,7 @@ final class NotificationManager: NotificationManagerProtocol {
     func triggerPrivateNotification() {
         let content = UNMutableNotificationContent()
         content.title = "SafeCons"
-        content.body = "Você tem uma nova mensagem."
+        content.body = "You have a new message."
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
