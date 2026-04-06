@@ -37,6 +37,7 @@ final class MessageRepository: MessageRepositoryProtocol {
 
         let message = Message(sender: sender, content: content, isEncrypted: isEncrypted)
         chat.messages.append(message)
+        chat.updatedAt = Date.now
         try modelContext.save()
     }
 }
