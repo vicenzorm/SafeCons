@@ -22,14 +22,14 @@ struct MainTabView: View {
             
             Tab("Intercom", systemImage: "sensor.tag.radiowaves.forward") {
                 NavigationStack {
-                    IntercomView(requestManager: container.requestManager, container: container)
+                    IntercomView(viewModel: IntercomViewModel(requestManager: container.requestManager, connectionOrchestrator: container.connectionOrchestrator))
                 }
             }
             .badge(container.requestManager.pendingRequests.count)
             
             Tab("Connect", systemImage: "qrcode.viewfinder") {
                 NavigationStack {
-                    UserView(viewModel: UserViewModel(userService: container.userService, cryptoService: container.cryptoService))
+                    UserView(viewModel: UserViewModel(userService: container.userService, cryptoService: container.cryptoService, networkService: container.networkService))
                 }
             }
         }
