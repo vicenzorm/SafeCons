@@ -119,5 +119,5 @@ struct UserView: View {
 
 #Preview {
     let container = AppContainer.shared
-    UserView(viewModel: UserViewModel(userService: container.userService, cryptoService: container.cryptoService))
+    UserView(viewModel: UserViewModel(userService: container.userService, cryptoService: container.cryptoService, networkService: container.networkService))
 }
