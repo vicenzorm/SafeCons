@@ -1,20 +1,18 @@
-    //
-    //  IntercomView.swift
-    //  SafeCons
-    //
-    //  Created by Vicenzo Másera on 28/03/26.
-    //
+//
+//  IntercomView.swift
+//  SafeCons
+//
+//  Created by Vicenzo Másera on 28/03/26.
+//
 import SwiftUI
 
 struct IntercomView: View {
-    
-    @Bindable var requestManager: ConnectionRequestManager
-    var container: AppContainer
-    
+    @Bindable var viewModel: IntercomViewModel
+
     var body: some View {
         NavigationStack {
             Group {
-                if requestManager.pendingRequests.isEmpty {
+                if viewModel.requestManager.pendingRequests.isEmpty {
                     emptyIntercomView
                 } else {
                     requestsScrollView
@@ -24,17 +22,17 @@ struct IntercomView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-    
+
     private var emptyIntercomView: some View {
         VStack(spacing: 16) {
             Image(systemName: "antenna.radiowaves.left.and.right")
                 .font(.system(size: 48))
                 .foregroundStyle(.gray)
-            
+
             Text("Radio is silent.")
                 .font(.headline)
                 .foregroundStyle(.primary)
-            
+
             Text("No pending connection requests in this perimeter.")
                 .font(.caption)
                 .foregroundStyle(.gray)
@@ -43,11 +41,11 @@ struct IntercomView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
     private var requestsScrollView: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
-                ForEach(requestManager.pendingRequests) { request in
+                ForEach(viewModel.requestManager.pendingRequests) { request in
                     requestCard(for: request)
                 }
             }
@@ -55,7 +53,7 @@ struct IntercomView: View {
             .frame(maxWidth: .infinity)
         }
     }
-    
+
     private func requestCard(for request: ConnectionRequest) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -63,7 +61,7 @@ struct IntercomView: View {
                     Text("\(request.senderName) is knocking")
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    
+
                     Text("Handshake detected at \(request.timeStamp.formatted(date: .omitted, time: .shortened))")
                         .font(.caption)
                         .foregroundStyle(.gray)
@@ -73,19 +71,19 @@ struct IntercomView: View {
                     .foregroundStyle(.green)
                     .font(.title3)
             }
-            
+
             HStack(spacing: 12) {
                 Button(role: .destructive) {
-                    container.rejectConnection(request)
+                    viewModel.reject(request)
                 } label: {
                     Text("Block")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
-                
+
                 Button {
                     Task {
-                        await container.acceptConnection(request)
+                        await viewModel.accept(request)
                     }
                 } label: {
                     Text("Accept Handshake")
