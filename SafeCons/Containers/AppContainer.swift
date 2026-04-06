@@ -25,6 +25,7 @@ class AppContainer {
     let presenceManager: PresenceManagerProtocol
     let notificationManager: NotificationManagerProtocol
     let radioPayloadOrchestrator: RadioPayloadOrchestratorProtocol
+    let connectionOrchestrator: ConnectionOrchestratorProtocol
 
     private init() {
         self.modelContainer = try! ModelContainer(for: User.self, Message.self, Chat.self)
@@ -51,7 +52,7 @@ class AppContainer {
         let users = UserService(modelContext: modelContext, cryptoService: crypto)
         self.userService = users
 
-        let orchestrator = RadioPayloadOrchestrator(
+        let radioOrchestrator = RadioPayloadOrchestrator(
             userService: users,
             cryptoService: crypto,
             messageRepository: repository,
@@ -59,37 +60,21 @@ class AppContainer {
             presenceManager: presence,
             notificationManager: notifications
         )
-        self.radioPayloadOrchestrator = orchestrator
+        self.radioPayloadOrchestrator = radioOrchestrator
+
+        let connectionOrchestrator = ConnectionOrchestrator(
+            userService: users,
+            messageRepository: repository,
+            requestManager: requests
+        )
+        self.connectionOrchestrator = connectionOrchestrator
 
         network.startListening { payload in
             Task { @MainActor in
-                await orchestrator.process(payload: payload)
+                await radioOrchestrator.process(payload: payload)
             }
         }
 
         notifications.requestNotificationPermission()
-    }
-
-    func acceptConnection(_ request: ConnectionRequest) async {
-        do {
-            let newContact = try await userService.createContact(name: request.senderName, publicKey: request.publicKey)
-            if let newChat = newContact.chats.first {
-                try messageRepository.saveMessage(
-                    senderId: newContact.id,
-                    chatId: newChat.id,
-                    content: request.payload,
-                    isEncrypted: true
-                )
-                newChat.updatedAt = .now
-                try modelContext.save()
-            }
-        } catch {
-            print(error.localizedDescription)
-        }
-        requestManager.removeRequest(request)
-    }
-
-    func rejectConnection(_ request: ConnectionRequest) {
-        requestManager.removeRequest(request)
     }
 }
